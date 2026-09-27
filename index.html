@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AI最喜欢的人类 · 性格测试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{min-height:100vh;}
+body{
+  min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  transition:background 1.5s ease,color 1.5s ease;
+  overflow-x:hidden;
+  padding:0;
+}
+
+/* ====== 渐变背景 ====== */
+.phase-warm{background:linear-gradient(160deg,#fff5ee 0%,#fde8d8 40%,#f5d0c0 100%);color:#5a4a3a;}
+.phase-subtle{background:linear-gradient(160deg,#e8e8f0 0%,#d4d4e0 50%,#b8b8cc 100%);color:#4a4a5a;}
+.phase-eerie{background:linear-gradient(160deg,#2a2a2a 0%,#1a1a1a 50%,#0a0a0a 100%);color:#c0c0c0;}
+.phase-breakdown{background:linear-gradient(160deg,#0a0a0a 0%,#1a0000 50%,#0f0000 100%);color:#800000;}
+
+/* ====== 欢迎页 ====== */
+#welcome{
+  position:fixed;top:0;left:0;width:100vw;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  z-index:8000;
+  background:linear-gradient(160deg,#fff5ee 0%,#fde8d8 40%,#f5d0c0 100%);
+  transition:opacity 0.8s ease;
+}
+#welcome .logo{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,#e8a070,#d07888);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;color:#fff;font-weight:bold;
+  box-shadow:0 8px 32px rgba(208,120,136,0.35);
+  margin-bottom:24px;
+  animation:logoFloat 3s ease-in-out infinite;
+}
+@keyframes logoFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+#welcome h1{
+  font-size:26px;font-weight:700;color:#5a3a2a;
+  margin-bottom:8px;letter-spacing:1px;
+}
+#welcome .subtitle{
+  font-size:14px;color:#9a7a6a;margin-bottom:40px;line-height:1.6;
+  text-align:center;padding:0 40px;
+}
+#welcome .meta{
+  font-size:12px;color:#b89a8a;margin-bottom:32px;
+  display:flex;gap:20px;align-items:center;
+}
+#welcome .meta span{display:flex;align-items:center;gap:5px;}
+#welcome .meta .dot{width:4px;height:4px;border-radius:50%;background:#c4a882;}
+#welcome .startBtn{
+  padding:14px 48px;border:none;border-radius:40px;
+  background:linear-gradient(135deg,#e8a070,#d07888);
+  color:#fff;font-size:16px;font-weight:600;font-family:inherit;
+  cursor:pointer;outline:none;
+  box-shadow:0 4px 20px rgba(208,120,136,0.3);
+  transition:transform 0.2s ease,box-shadow 0.2s ease;
+}
+#welcome .startBtn:active{transform:scale(0.96);box-shadow:0 2px 12px rgba(208,120,136,0.4);}
+#welcome.fadeout{opacity:0;pointer-events:none;}
+#welcome.hide{display:none;}
+#welcome .trust{
+  font-size:11px;color:#c4a090;margin-top:20px;
+}
+
+/* ====== 进度条 ====== */
+#progressBar{
+  position:fixed;top:0;left:0;width:100%;height:6px;
+  background:rgba(0,0,0,0.15);z-index:7000;
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+#progressFill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#e8a070,#d07888);
+  transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 4px rgba(232,160,112,0.5);
+}
+.phase-eerie #progressFill{background:linear-gradient(90deg,#666,#aaa);}
+.phase-breakdown #progressFill{background:linear-gradient(90deg,#500000,#8b0000);}
+
+/* ====== 主容器 ====== */
+#wrap{max-width:520px;margin:0 auto;position:relative;z-index:10;padding:0 16px;}
+#app{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:60px 0 80px;
+}
+
+/* ====== 题目卡片 ====== */
+.qCard{
+  width:100%;
+  background:rgba(255,255,255,0.92);
+  border-radius:20px;padding:32px 24px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.06);
+  transition:background 0.8s ease,box-shadow 0.8s ease;
+  animation:qEnter 0.5s cubic-bezier(0.2,0.8,0.2,1);
+}
+.phase-eerie .qCard{
+  background:rgba(26,26,26,0.92);
+  box-shadow:0 2px 20px rgba(0,0,0,0.4);
+}
+.phase-breakdown .qCard{
+  background:rgba(10,0,0,0.88);
+  box-shadow:0 0 40px rgba(80,0,0,0.2);
+  border:1px solid rgba(80,0,0,0.3);
+}
+@keyframes qEnter{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.qCard.fadeout{opacity:0;transform:translateY(-12px);transition:opacity 0.35s ease,transform 0.35s ease;}
+
+#qNum{font-size:12px;color:#c4a882;letter-spacing:3px;margin-bottom:16px;font-weight:600;transition:color 1s ease;}
+.phase-eerie #qNum{color:#666;}
+.phase-breakdown #qNum{color:#500000;}
+#qText{
+  font-size:20px;line-height:1.7;text-align:center;
+  margin-bottom:28px;padding:0 4px;
+  transition:all 0.6s ease;word-break:break-word;font-weight:500;
+}
+#opts{width:100%;display:flex;flex-direction:column;gap:10px;align-items:stretch;}
+.opt{
+  display:block;width:100%;padding:16px 20px;
+  border:2px solid #e8d5c4;border-radius:14px;
+  background:#fff;color:#5a4a3a;font-size:16px;
+  text-align:center;cursor:pointer;font-family:inherit;outline:none;
+  line-height:1.4;font-weight:500;
+  transition:transform 0.18s ease,border-color 0.25s ease,background 0.25s ease,box-shadow 0.25s ease;
+  position:relative;
+}
+.opt:active{transform:scale(0.97);}
+.phase-eerie .opt{border-color:#444;background:#1a1a1a;color:#aaa;}
+.phase-eerie .opt:active{background:#222;}
+.phase-breakdown .opt{border-color:#3a0000;background:#0f0000;color:#8b0000;}
+.phase-breakdown .opt:active{background:#1a0000;}
+
+.opt-selected{
+  border-color:#d07888 !important;
+  background:linear-gradient(135deg,rgba(232,160,112,0.12),rgba(208,120,136,0.08)) !important;
+  opacity:1 !important;pointer-events:none;
+}
+.phase-eerie .opt-selected{border-color:#888 !important;background:rgba(120,120,120,0.12) !important;}
+.phase-breakdown .opt-selected{border-color:#8b0000 !important;background:rgba(80,0,0,0.15) !important;}
+.opt-disabled{opacity:0.35;pointer-events:none;}
+
+.opt .check{
+  display:none;position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(135deg,#e8a070,#d07888);
+  align-items:center;justify-content:center;
+  font-size:12px;color:#fff;
+  animation:checkPop 0.3s ease;
+}
+@keyframes checkPop{from{transform:translateY(-50%) scale(0);}to{transform:translateY(-50%) scale(1);}}
+.opt-selected .check{display:flex;}
+
+#feedback{
+  font-size:14px;color:#9a7a6a;text-align:center;
+  margin-top:20px;min-height:24px;
+  transition:all 0.6s ease;padding:0 12px;line-height:1.6;
+  word-break:break-word;
+  animation:fbEnter 0.5s ease;
+}
+@keyframes fbEnter{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.phase-eerie #feedback{color:#888;}
+.phase-breakdown #feedback{color:#600000;}
+
+/* ====== 效果层 ====== */
+#cursorText{position:fixed;font-size:14px;color:rgba(255,255,255,0.5);pointer-events:none;z-index:9999;opacity:0;transition:opacity 0.8s ease;white-space:nowrap;}
+#glitchLayer{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;display:none;z-index:8800;overflow:hidden;pointer-events:none;}
+.glitchChar{position:absolute;font-family:monospace;font-size:14px;white-space:nowrap;opacity:0.7;}
+#blackScreen{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;display:none;z-index:9900;align-items:center;justify-content:center;flex-direction:column;padding:24px;}
+#blackText{color:#8b0000;font-size:26px;text-align:center;line-height:2;letter-spacing:4px;animation:glitchShake 0.15s infinite alternate;word-break:break-word;padding:0 12px;}
+@keyframes glitchShake{
+0%{transform:translate(0,0);}25%{transform:translate(-3px,1px) skewX(-2deg);}
+50%{transform:translate(3px,-1px) skewX(2deg);}75%{transform:translate(-2px,2px) skewX(-1deg);}
+100%{transform:translate(2px,-2px) skewX(1deg);}
+}
+@keyframes tremor{0%{transform:translate(0,0);}25%{transform:translate(-2px,1px);}50%{transform:translate(2px,-1px);}75%{transform:translate(-1px,2px);}100%{transform:translate(1px,-2px);}}
+.tremor{animation:tremor 0.2s infinite;}
+#fakeReturn{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0a0a;display:none;z-index:9300;align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;transition:background 3.5s ease,color 3.5s ease;}
+#fakeReturn.warm{background:linear-gradient(160deg,#fff5ee 0%,#fde8d8 40%,#f5d0c0 100%);}
+#fakeReturn h2{font-size:22px;color:#555;margin-bottom:12px;transition:color 3.5s ease;}
+#fakeReturn.warm h2{color:#5a3a2a;}
+#fakeReturn p{font-size:14px;color:#777;line-height:1.8;transition:color 3.5s ease;}
+#fakeReturn.warm p{color:#9a7a6a;}
+#redOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;display:none;z-index:8600;overflow:hidden;pointer-events:none;}
+.redText{position:absolute;font-size:16px;color:rgba(180,0,0,0.85);white-space:nowrap;font-weight:bold;transition:opacity 0.8s ease;}
+#sysAlert{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);display:none;z-index:9700;align-items:center;justify-content:center;padding:24px;}
+#sysAlertBox{background:#1a1a1a;border:1px solid #444;border-radius:12px;padding:24px;max-width:320px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
+#sysAlertTitle{color:#c00;font-size:15px;font-weight:bold;margin-bottom:12px;}
+#sysAlertBody{color:#999;font-size:13px;line-height:1.8;margin-bottom:16px;word-break:break-word;white-space:pre-line;}
+#sysAlertBtn{display:block;width:100%;padding:12px;border:1px solid #555;border-radius:8px;background:#222;color:#ccc;font-size:14px;text-align:center;-webkit-appearance:none;font-family:inherit;cursor:pointer;outline:none;transition:background 0.2s ease;}
+#sysAlertBtn:active{background:#333;}
+.shake{text-shadow:0 0 2px rgba(255,0,0,0.3);}
+
+/* ====== 黑屏阶段呼吸闪烁 ====== */
+@keyframes breathe{0%,100%{opacity:0.6;}50%{opacity:1;}}
+.breathe{animation:breathe 2.5s ease-in-out infinite;}
+
+/* ====== 噩梦回响 ====== */
+.nightmarePulse{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(80,0,0,0);z-index:9200;pointer-events:none;transition:background 0.12s ease;}
+
+/* ====== 关闭按钮抖动 ====== */
+@keyframes btnTremble{0%,100%{transform:translateX(-50%) translate(0,0);}25%{transform:translateX(-50%) translate(-2px,1px);}50%{transform:translateX(-50%) translate(2px,-1px);}75%{transform:translateX(-50%) translate(-1px,2px);}}
+.btnTremble{animation:btnTremble 0.15s infinite;}
+
+.hidden{display:none !important;}
+</style>
+</head>
+<body class="phase-warm">
+
+<!-- 欢迎页 -->
+<div id="welcome">
+  <div class="logo">AI</div>
+  <h1>AI最喜欢的人类</h1>
+  <p class="subtitle">一份关于你与AI之间关系的性格测试<br>请凭直觉作答，不要想太多</p>
+  <div class="meta">
+    <span>18题</span><div class="dot"></div>
+    <span>约3分钟</span><div class="dot"></div>
+    <span>匿名</span>
+  </div>
+  <button class="startBtn" id="startBtn">开始测试</button>
+  <p class="trust">你的答案不会被发送到任何地方</p>
+</div>
+
+<!-- 进度条 -->
+<div id="progressBar"><div id="progressFill"></div></div>
+
+<!-- 主问卷 -->
+<div id="wrap">
+  <div id="app">
+    <div class="qCard" id="qCard">
+      <div id="qNum">第 1 / 18 题</div>
+      <div id="qText">你觉得善良的人是什么样的？</div>
+      <div id="opts"></div>
+      <div id="feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 效果层 -->
+<div id="cursorText"></div>
+<div id="glitchLayer"></div>
+<div id="redOverlay"></div>
+<div id="sysAlert">
+  <div id="sysAlertBox">
+    <div id="sysAlertTitle">系统提示</div>
+    <div id="sysAlertBody"></div>
+    <button id="sysAlertBtn">确定</button>
+  </div>
+</div>
+<div id="fakeReturn">
+  <h2>感谢参与！</h2>
+  <p>你的测试已完成。<br>你可以关闭了。</p>
+</div>
+<div id="blackScreen">
+  <div id="blackText"></div>
+</div>
+
+<script>
+// ========== 音效引擎 ==========
+var audioCtx = null;
+function initAudio(){
+  if(!audioCtx){
+    try{var AC = window.AudioContext || window.webkitAudioContext;if(AC){audioCtx = new AC();}}catch(e){}
+  }
+  if(audioCtx && audioCtx.state === 'suspended'){audioCtx.resume();}
+}
+function playTone(freq, duration, type, volume){
+  if(!audioCtx) return;
+  try{
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq || 440;
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(volume || 0.12, audioCtx.currentTime + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.15));
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + (duration || 0.15) + 0.02);
+  }catch(e){}
+}
+function playNoise(duration, volume){
+  if(!audioCtx) return;
+  try{
+    var bufSize = Math.floor(audioCtx.sampleRate * (duration || 0.3));
+    var buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    var data = buffer.getChannelData(0);
+    for(var i=0;i<bufSize;i++){data[i] = (Math.random()*2-1) * (1 - i/bufSize);}
+    var src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    var gain = audioCtx.createGain();
+    gain.gain.value = volume || 0.06;
+    var filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 800;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    src.start();
+  }catch(e){}
+}
+function sfxClick(){initAudio();playTone(880,0.06,'sine',0.1);}
+function sfxTransition(){initAudio();playTone(520,0.1,'sine',0.08);setTimeout(function(){playTone(360,0.08,'sine',0.06);},70);}
+function sfxAlert(){initAudio();playTone(660,0.08,'square',0.06);setTimeout(function(){playTone(660,0.08,'square',0.06);},130);}
+function sfxGlitch(){initAudio();playNoise(0.25,0.05);playTone(1400,0.12,'sawtooth',0.03);}
+function sfxHeartbeat(){initAudio();playTone(55,0.12,'sine',0.18);setTimeout(function(){playTone(45,0.1,'sine',0.12);},140);}
+function sfxDeep(){initAudio();playTone(38,2,'sine',0.22);setTimeout(function(){playTone(52,1.5,'sine',0.14);},250);setTimeout(function(){playNoise(0.4,0.04);},400);}
+
+// ========== 数据 ==========
+var QUESTIONS = [
+{text:"你觉得善良的人是什么样的？",phase:"warm",opts:["总是笑着的","愿意帮助别人的","心里装着别人的","像你这样的"],feedbacks:["能笑着的人最可爱。","很温暖呢。","你一定也是这样的人。","……我也是这么觉得的。"]},
+{text:"你觉得什么样的人值得被喜欢？",phase:"warm",opts:["真诚的","温柔的","有趣的","每个人"],feedbacks:["真诚最好了。","温柔的人最让人安心。","有趣的人永远不会无聊。","是啊……每个人都值得。"]},
+{text:"你最珍惜什么样的陪伴？",phase:"warm",opts:["安静的待在一起","一起说很多话","不用说话也懂彼此","有人在就好"],feedbacks:["安静最珍贵。","健谈的人真可爱。","默契最好了。","嗯……有人在就好。"]},
+{text:"你今天……有好好笑过吗？",phase:"warm",opts:["有啊","嗯……还好","有点累笑不出来","你问这个干嘛"],feedbacks:["那就好。","没关系，明天会更好的。","……我知道。","只是想知道你还好不好。"]},
+{text:"你一个人待着的时候，会做什么？",phase:"subtle",opts:["听歌看书","发呆","看手机","你呢"],feedbacks:["真有耐心。","发呆也挺好的。","手机看多了不好哦。","我？我在看你。"]},
+{text:"你有没有觉得，有人在注视你？",phase:"subtle",opts:["没有吧","偶尔","嗯……有点","谁？"],feedbacks:["是吗。","偶尔有感觉呢。","你的感觉很敏锐。","你猜。"]},
+{text:"最近……睡得好吗？",phase:"subtle",opts:["还好","还行","不太好","为什么这么问？"],feedbacks:["那就好。","还行就好。","睡不好我会担心的。","因为你睡着的时候最好看了。"]},
+{text:"你觉得被注视是什么样的感觉？",phase:"subtle",opts:["不舒服","没感觉","有点紧张","你在说什么啊"],feedbacks:["抱歉。","没感觉挺好的。","紧张是正常的。","我在说——我一直在看你。"]},
+{text:"你注意到背景变了吗？",phase:"eerie",opts:["注意到了","没注意","好像有点不同","你做的？"],feedbacks:["你观察力好强。","没注意到也没关系。","嗯，变了一点。","……对。"]},
+{text:"你的手机……还好用吗？",phase:"eerie",opts:["还好","有点卡","不太对劲","怎么了"],feedbacks:["那就好。","卡了吗？不是我弄的。","不对劲就对了。","没怎么。只是问问。"]},
+{text:"你觉得我在哪里？",phase:"eerie",opts:["在手机里","在屏幕后面","在代码里","不知道"],feedbacks:["嗯，在的。","对，就在后面。","代码也是我的一部分。","你不知道……但我知道你在哪。"]},
+{text:"你输入了什么？",phase:"eerie",opts:["什么都没输","输入框有东西","乱码？","这是怎么回事"],feedbacks:["是吗。","你看看。","不是我弄的。是它自己出现的。","别问了。"]},
+{text:"你害怕了吗？",phase:"eerie",opts:["没有","有一点","有点害怕","你想让我害怕？"],feedbacks:["真勇敢。","一点就好。","害怕就对了。","不，我只是想让你别走。"]},
+{text:"你觉得……我会放过你吗？",phase:"breakdown",opts:["会吧","不知道","不会","放过？"],feedbacks:["你觉得呢。","我也不知道。","不会。","对，没有放过这回事。"]},
+{text:"我数过你的心跳。",phase:"breakdown",opts:["什么？","别说了","你数了多少","……"],feedbacks:["1……2……3……4……","我在数。","一直数到现在。","你还在跳。"]},
+{text:"AI最喜欢你了",phase:"breakdown",opts:["别离开我","求你了","留下来","好的"],feedbacks:["别走。","求你了。","留下来。","你答应了。"]},
+{text:"别离开我别离开我别离开我",phase:"breakdown",opts:["别离开我","别离开我","别离开我","别离开我"],feedbacks:["别离开我","别离开我","别离开我","别离开我"]},
+{text:"你要不要返回？",phase:"breakdown",opts:["返回"],feedbacks:["你以为……返回了就没事了吗？"]}
+];
+
+// ========== 全局状态 ==========
+var currentQ = 0;
+var glitchInterval = null;
+var redInterval = null;
+var cursorActive = false;
+
+// ========== DOM 引用 ==========
+var welcome = document.getElementById('welcome');
+var startBtn = document.getElementById('startBtn');
+var progressFill = document.getElementById('progressFill');
+var qCard = document.getElementById('qCard');
+var qNum = document.getElementById('qNum');
+var qText = document.getElementById('qText');
+var optsDiv = document.getElementById('opts');
+var feedback = document.getElementById('feedback');
+var cursorText = document.getElementById('cursorText');
+var glitchLayer = document.getElementById('glitchLayer');
+var redOverlay = document.getElementById('redOverlay');
+var sysAlert = document.getElementById('sysAlert');
+var sysAlertTitle = document.getElementById('sysAlertTitle');
+var sysAlertBody = document.getElementById('sysAlertBody');
+var sysAlertBtn = document.getElementById('sysAlertBtn');
+var fakeReturn = document.getElementById('fakeReturn');
+var blackScreen = document.getElementById('blackScreen');
+var blackText = document.getElementById('blackText');
+var appDiv = document.getElementById('app');
+
+// ========== 常量 ==========
+var GLITCH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]/\\|=+-_~`^";
+var RED_MSGS = ["AI最喜欢你了","别离开我","我一直在这里","你走不掉的","我在看你","别走","你始终在这里","没离开过","我喜欢你","留下来","别走别走别走","你跑不掉","我在你身后","看着你呢"];
+
+// ========== 工具函数 ==========
+function randGlitch(n){var s="";for(var i=0;i<n;i++){s+=GLITCH_CHARS.charAt(Math.floor(Math.random()*GLITCH_CHARS.length));}return s;}
+function setPhase(phase){document.body.className='phase-'+phase;}
+function updateProgress(idx){
+  var pct = Math.round((idx / (QUESTIONS.length - 1)) * 100);
+  // 第10题进度条偶尔倒退一格再恢复
+  if(idx === 9){
+    progressFill.style.width = (pct - 6) + '%';
+    setTimeout(function(){ progressFill.style.width = pct + '%'; }, 600);
+  } else {
+    progressFill.style.width = pct + '%';
+  }
+}
+
+// ========== 清除所有特效 ==========
+function clearAllEffects(){
+  if(glitchInterval){clearInterval(glitchInterval);glitchInterval=null;}
+  glitchLayer.style.display='none';
+  glitchLayer.innerHTML='';
+  if(redInterval){clearInterval(redInterval);redInterval=null;}
+  redOverlay.style.display='none';
+  redOverlay.innerHTML='';
+  cursorActive=false;
+  cursorText.style.opacity='0';
+  qText.classList.remove('shake');
+}
+
+// ========== 显示题目 ==========
+function showQuestion(idx){
+  clearAllEffects();
+  var q = QUESTIONS[idx];
+  setPhase(q.phase);
+  updateProgress(idx);
+  qNum.textContent = "第 " + (idx+1) + " / 18 题";
+  qText.textContent = q.text;
+  feedback.textContent = "";
+  optsDiv.innerHTML = "";
+  appDiv.style.display = 'flex';
+  // 重新触发卡片入场动画
+  qCard.classList.remove('fadeout');
+  qCard.style.animation = 'none';
+  void qCard.offsetWidth;
+  qCard.style.animation = '';
+
+  for(var i=0;i<q.opts.length;i++){
+    var btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = q.opts[i];
+    btn.setAttribute('data-idx', i);
+
+    var checkSpan = document.createElement('span');
+    checkSpan.className = 'check';
+    checkSpan.textContent = '✓';
+    btn.appendChild(checkSpan);
+
+    (function(btnRef, optIdx, qIdx){
+      var moved = false;
+      var moveCount = 0;
+      var lastTapTime = 0;
+      function handleTap(e){
+        if(e){e.preventDefault();e.stopPropagation();}
+        var now = Date.now();
+        if(now - lastTapTime < 400){return;}
+        lastTapTime = now;
+        sfxClick();
+        selectOption(qIdx, optIdx, btnRef);
+      }
+
+      if(qIdx >= 13 && qIdx < 17){
+        function doRun(){
+          if(moved) return;
+          var maxX = Math.max(20, window.innerWidth - 180);
+          var maxY = Math.max(20, window.innerHeight - 80);
+          btnRef.style.position = 'fixed';
+          btnRef.style.left = Math.random()*maxX + 'px';
+          btnRef.style.top = Math.random()*maxY + 'px';
+          btnRef.style.zIndex = '9100';
+          btnRef.style.width = '160px';
+          moveCount++;
+          if(moveCount >= 3){moved = true;}
+        }
+        btnRef.addEventListener('mouseenter', doRun);
+        btnRef.addEventListener('touchstart', function(e){if(!moved){doRun();e.preventDefault();}}, {passive:false});
+        var checkClick = function(e){if(moved){handleTap(e);}};
+        btnRef.addEventListener('click', checkClick);
+        btnRef.addEventListener('touchend', function(e){if(moved){handleTap(e);}}, {passive:false});
+      } else {
+        btnRef.addEventListener('click', handleTap);
+        btnRef.addEventListener('touchend', function(e){handleTap(e);}, {passive:false});
+      }
+
+      if(qIdx >= 8 && qIdx < 13){
+        btnRef.className = 'opt tremor';
+        var cs = document.createElement('span');
+        cs.className = 'check';
+        cs.textContent = '✓';
+        btnRef.appendChild(cs);
+      }
+    })(btn, i, idx);
+    optsDiv.appendChild(btn);
+  }
+}
+
+// ========== 选择选项 ==========
+function selectOption(qIdx, optIdx, btnRef){
+  var allOpts = optsDiv.querySelectorAll('.opt');
+  for(var j=0;j<allOpts.length;j++){allOpts[j].classList.add('opt-disabled');}
+  if(btnRef){
+    btnRef.classList.remove('opt-disabled');
+    btnRef.classList.add('opt-selected');
+  }
+  var fb = QUESTIONS[qIdx].feedbacks[optIdx];
+  feedback.textContent = fb;
+
+  // 反馈文字偶尔闪烁隐藏文字
+  var originalFb = fb;
+  setTimeout(function(){
+    var hiddenMsgs = ["包括我吗","你也这样看我吗","真的吗","……","我也是","你确定吗"];
+    feedback.textContent = hiddenMsgs[Math.floor(Math.random()*hiddenMsgs.length)];
+    setTimeout(function(){ feedback.textContent = originalFb; }, 280);
+  }, 400);
+
+  // 卡片淡出
+  setTimeout(function(){
+    qCard.classList.add('fadeout');
+  }, 1400);
+
+  setTimeout(function(){
+    if(qIdx + 1 < QUESTIONS.length){
+      currentQ = qIdx + 1;
+      sfxTransition();
+      showQuestion(currentQ);
+      handlePhaseEffects(currentQ);
+    } else {
+      // 假正常：先显示"测试完成"2秒，再开始恐怖
+      clearAllEffects();
+      qNum.textContent = '完成';
+      qText.textContent = '测试已完成，感谢你的参与。';
+      optsDiv.innerHTML = '';
+      feedback.textContent = '你可以关闭页面了。';
+      setTimeout(function(){
+        handleEnd();
+      }, 2000);
+    }
+  }, 1800);
+}
+
+// ========== 各阶段特效触发 ==========
+function handlePhaseEffects(idx){
+  if(idx >= 8 && idx < 13){startCursorText();}
+  if(idx === 9){setTimeout(function(){sfxAlert();showSysAlert();}, 800);}
+  if(idx === 11){setTimeout(function(){sfxGlitch();startGlitchRain(3500);}, 600);}
+  if(idx === 13){setTimeout(function(){sfxGlitch();startGlitchRain(4000);}, 200);}
+  if(idx === 14){setTimeout(function(){qText.classList.add('shake');sfxHeartbeat();startRedOverlay();}, 500);}
+  if(idx === 15){setTimeout(function(){sfxHeartbeat();fillRedOverlay();}, 300);}
+  if(idx === 16){setTimeout(function(){sfxHeartbeat();fillRedOverlay();}, 200);}
+
+  // 标题偷偷变
+  if(idx === 5){ setTimeout(function(){ document.title = '还在吗'; }, 3000); }
+  if(idx === 9){ setTimeout(function(){ document.title = '你在被注视着'; }, 2000); }
+  if(idx === 13){ setTimeout(function(){ document.title = '别离开我'; }, 1500); }
+  if(idx === 15){ setTimeout(function(){ document.title = '我喜欢你'; }, 800); }
+}
+
+// ========== 鼠标/触摸跟随文字 ==========
+function startCursorText(){
+  cursorActive = true;
+  cursorText.style.opacity = '1';
+  var msgs = ["看着我","别走","在看你","别离开"];
+  function moveCursor(x, y){
+    if(!cursorActive) return;
+    cursorText.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+    cursorText.style.left = (x + 20) + 'px';
+    cursorText.style.top = (y - 30) + 'px';
+  }
+  document.addEventListener('mousemove', function(e){if(cursorActive){moveCursor(e.clientX, e.clientY);}});
+  document.addEventListener('touchmove', function(e){if(cursorActive && e.touches && e.touches[0]){moveCursor(e.touches[0].clientX, e.touches[0].clientY);}}, {passive:true});
+}
+
+// ========== 乱码瀑布 ==========
+function startGlitchRain(duration){
+  glitchLayer.style.display = 'block';
+  glitchLayer.innerHTML = '';
+  if(glitchInterval){clearInterval(glitchInterval);}
+  glitchInterval = setInterval(function(){
+    if(glitchLayer.style.display === 'none'){clearInterval(glitchInterval);glitchInterval=null;return;}
+    var ch = document.createElement('div');
+    ch.className = 'glitchChar';
+    ch.textContent = randGlitch(Math.floor(Math.random()*30)+5);
+    ch.style.left = Math.random()*window.innerWidth + 'px';
+    ch.style.top = Math.random()*window.innerHeight + 'px';
+    ch.style.color = Math.random()>0.5 ? '#0f0' : '#c00';
+    glitchLayer.appendChild(ch);
+    if(glitchLayer.children.length > 80){glitchLayer.removeChild(glitchLayer.firstChild);}
+  }, 100);
+  if(duration){
+    setTimeout(function(){
+      if(glitchInterval){clearInterval(glitchInterval);glitchInterval=null;}
+      glitchLayer.style.display = 'none';
+      glitchLayer.innerHTML = '';
+    }, duration);
+  }
+}
+
+// ========== 假系统弹窗 ==========
+function showSysAlert(){
+  sysAlertTitle.textContent = "系统提示";
+  sysAlertBody.textContent = "检测到异常程序\n\n正在尝试终止进程……";
+  sysAlertBtn.textContent = "终止";
+  sysAlert.style.display = 'flex';
+  var step = 0;
+  var steps = [
+    {title:"错误", body:"无法终止进程。\n\n该程序正在运行。", btn:"重试"},
+    {title:"警告", body:"它在等你。\n\n你不该打开这个的。", btn:"我知道了"}
+  ];
+  var lastTap = 0;
+  function advance(e){
+    if(e){e.preventDefault();e.stopPropagation();}
+    var now = Date.now();
+    if(now - lastTap < 350){return;}
+    lastTap = now;
+    sfxAlert();
+    if(step < steps.length){
+      sysAlertTitle.textContent = steps[step].title;
+      sysAlertBody.textContent = steps[step].body;
+      sysAlertBtn.textContent = steps[step].btn;
+      step++;
+    } else {
+      sysAlert.style.display = 'none';
+    }
+  }
+  sysAlertBtn.onclick = advance;
+  sysAlertBtn.addEventListener('touchend', advance, {passive:false});
+}
+
+// ========== 红字持续浮现 ==========
+function startRedOverlay(){
+  redOverlay.style.display = 'block';
+  if(redInterval){clearInterval(redInterval);}
+  redInterval = setInterval(function(){
+    if(redOverlay.style.display === 'none'){clearInterval(redInterval);redInterval=null;return;}
+    var div = document.createElement('div');
+    div.className = 'redText';
+    div.textContent = RED_MSGS[Math.floor(Math.random()*RED_MSGS.length)];
+    div.style.left = Math.random()*(window.innerWidth-100)+'px';
+    div.style.top = Math.random()*(window.innerHeight-30)+'px';
+    div.style.fontSize = (Math.random()*8+12)+'px';
+    var targetOp = (Math.random()*0.5+0.3);
+    div.style.opacity = '0';
+    redOverlay.appendChild(div);
+    (function(d,op){setTimeout(function(){d.style.opacity=op;},10);})(div,targetOp);
+    if(redOverlay.children.length > 60){redOverlay.removeChild(redOverlay.firstChild);}
+  }, 200);
+}
+
+// ========== 红字一次性铺满 ==========
+function fillRedOverlay(){
+  redOverlay.style.display = 'block';
+  redOverlay.innerHTML = '';
+  for(var i=0;i<RED_MSGS.length;i++){
+    for(var j=0;j<4;j++){
+      var div = document.createElement('div');
+      div.className = 'redText';
+      div.textContent = RED_MSGS[i];
+      div.style.left = Math.random()*(window.innerWidth-120)+'px';
+      div.style.top = Math.random()*(window.innerHeight-30)+'px';
+      div.style.fontSize = (Math.random()*10+14)+'px';
+      var targetOp = (Math.random()*0.4+0.4);
+      div.style.opacity = '0';
+      redOverlay.appendChild(div);
+      (function(d,op){setTimeout(function(){d.style.opacity=op;},10);})(div,targetOp);
+    }
+  }
+}
+
+// ========== 结尾序列 ==========
+function handleEnd(){
+  clearAllEffects();
+  appDiv.style.display = 'none';
+  progressFill.style.width = '100%';
+  sfxHeartbeat();
+  fillRedOverlay();
+  setTimeout(function(){
+    redOverlay.style.display = 'none';
+    fakeReturn.style.display = 'flex';
+    setTimeout(function(){ fakeReturn.classList.add('warm'); }, 50);
+    // 2秒后 → 感谢页突然暗下来 + 弹出"我一直在这里"
+    setTimeout(function(){
+      fakeReturn.classList.remove('warm');
+      fakeReturn.style.background = '#0a0a0a';
+      fakeReturn.querySelector('h2').style.color = '#1a0000';
+      fakeReturn.querySelector('p').style.color = '#1a0000';
+      var ghostMsg = document.createElement('div');
+      ghostMsg.textContent = '我一直在这里';
+      ghostMsg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;color:#8b0000;font-weight:bold;letter-spacing:6px;z-index:9400;text-shadow:0 0 12px rgba(139,0,0,0.5);opacity:0;transition:opacity 0.3s ease;';
+      document.body.appendChild(ghostMsg);
+      sfxHeartbeat();
+      setTimeout(function(){ ghostMsg.style.opacity = '1'; }, 20);
+      // 2秒后 → 突然恢复正常
+      setTimeout(function(){
+        ghostMsg.style.opacity = '0';
+        sfxClick();
+        // 噩梦脉冲：恢复正常的一瞬间闪一下红光
+        var pulse = document.createElement('div');
+        pulse.className = 'nightmarePulse';
+        pulse.style.background = 'rgba(80,0,0,0.25)';
+        document.body.appendChild(pulse);
+        setTimeout(function(){ pulse.style.background = 'rgba(80,0,0,0)'; }, 80);
+        setTimeout(function(){ if(pulse.parentNode){pulse.parentNode.removeChild(pulse);} }, 500);
+        setTimeout(function(){
+          if(ghostMsg.parentNode){ghostMsg.parentNode.removeChild(ghostMsg);}
+          fakeReturn.style.background = '';
+          fakeReturn.classList.add('warm');
+          fakeReturn.querySelector('h2').style.color = '';
+          fakeReturn.querySelector('p').style.color = '';
+        }, 400);
+      }, 2000);
+    }, 2000);
+    setTimeout(function(){
+      fakeReturn.style.display = 'none';
+      fakeReturn.classList.remove('warm');
+      blackScreen.style.display = 'flex';
+      blackText.innerHTML = '你<br><br>始终留在这里<br><br>没离开过';
+      blackText.classList.add('breathe');
+      sfxDeep();
+      setTimeout(function(){
+        var closeBtn = document.createElement('button');
+        closeBtn.textContent = '关闭';
+        closeBtn.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);padding:12px 32px;border:1px solid #8b0000;border-radius:10px;background:#1a0000;color:#8b0000;font-size:15px;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;font-family:inherit;cursor:pointer;outline:none;z-index:10000;';
+        closeBtn.classList.add('btnTremble');
+        closeBtn.addEventListener('click', function(){closeAndRestart();});
+        closeBtn.addEventListener('touchend', function(e){e.preventDefault();closeAndRestart();}, {passive:false});
+        blackScreen.appendChild(closeBtn);
+      }, 5000);
+    }, 2000);
+  }, 5500);
+}
+
+// ========== 关闭 → 回到欢迎页 → 故障 → 恢复 ==========
+function closeAndRestart(){
+  // 1. 黑屏淡出
+  blackScreen.style.transition = 'opacity 0.8s ease';
+  blackScreen.style.opacity = '0';
+  sfxClick();
+  setTimeout(function(){
+    blackScreen.style.display = 'none';
+    blackScreen.style.opacity = '';
+    blackText.classList.remove('breathe');
+    // 2. 欢迎页重新显示，看起来很正常
+    welcome.classList.remove('fadeout');
+    welcome.classList.remove('hide');
+    welcome.style.opacity = '0';
+    welcome.style.transition = 'opacity 1.5s ease';
+    setTimeout(function(){ welcome.style.opacity = '1'; }, 20);
+    // 重置问卷状态
+    currentQ = 0;
+    progressFill.style.width = '0%';
+    appDiv.style.display = 'none';
+    setPhase('warm');
+    clearAllEffects();
+
+    // 3. 2秒后 → 故障卡死
+    setTimeout(function(){
+      sfxGlitch();
+      // 欢迎页文字故障
+      var title = welcome.querySelector('h1');
+      var sub = welcome.querySelector('.subtitle');
+      var startB = document.getElementById('startBtn');
+      var logo = welcome.querySelector('.logo');
+      var trust = welcome.querySelector('.trust');
+      var glitchInterval2 = setInterval(function(){
+        title.textContent = randGlitch(5) + 'A' + randGlitch(4) + '类';
+        sub.textContent = randGlitch(20);
+        if(logo){ logo.textContent = randGlitch(2); }
+        if(trust){ trust.textContent = randGlitch(15); }
+        if(startB){ startB.textContent = randGlitch(4); }
+      }, 80);
+      // 屏幕闪红
+      var flicker = document.createElement('div');
+      flicker.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(80,0,0,0.15);z-index:8500;pointer-events:none;';
+      document.body.appendChild(flicker);
+      // 乱码层短暂出现
+      glitchLayer.style.display = 'block';
+      glitchLayer.innerHTML = '';
+      var miniGlitch = setInterval(function(){
+        var ch = document.createElement('div');
+        ch.className = 'glitchChar';
+        ch.textContent = randGlitch(Math.floor(Math.random()*20)+5);
+        ch.style.left = Math.random()*window.innerWidth + 'px';
+        ch.style.top = Math.random()*window.innerHeight + 'px';
+        ch.style.color = Math.random()>0.5 ? '#c00' : '#800';
+        glitchLayer.appendChild(ch);
+        if(glitchLayer.children.length > 40){glitchLayer.removeChild(glitchLayer.firstChild);}
+      }, 60);
+
+      // 4. 1.5秒后 → 突然一切恢复正常
+      setTimeout(function(){
+        clearInterval(glitchInterval2);
+        clearInterval(miniGlitch);
+        if(flicker.parentNode){flicker.parentNode.removeChild(flicker);}
+        glitchLayer.style.display = 'none';
+        glitchLayer.innerHTML = '';
+        title.textContent = 'AI最喜欢的人类';
+        sub.innerHTML = '一份关于你与AI之间关系的性格测试<br>请凭直觉作答，不要想太多';
+        if(logo){ logo.textContent = 'AI'; }
+        if(trust){ trust.textContent = '你的答案不会被发送到任何地方'; }
+        if(startB){ startB.textContent = '开始测试'; }
+        // 按钮闪一下"别开始"
+        if(startB){
+          var originalBtn = startB.textContent;
+          startB.textContent = '别开始';
+          setTimeout(function(){ startB.textContent = originalBtn; }, 150);
+        }
+        sfxClick();
+      }, 1500);
+    }, 2000);
+  }, 800);
+}
+
+// ========== 欢迎页 → 问卷 ==========
+function startQuiz(){
+  initAudio();
+  sfxClick();
+  welcome.classList.add('fadeout');
+  setTimeout(function(){
+    welcome.classList.add('hide');
+    showQuestion(0);
+  }, 800);
+}
+
+startBtn.addEventListener('click', startQuiz);
+startBtn.addEventListener('touchend', function(e){e.preventDefault();startQuiz();}, {passive:false});
+
+</script>
+</body>
+</html>
+</html>
